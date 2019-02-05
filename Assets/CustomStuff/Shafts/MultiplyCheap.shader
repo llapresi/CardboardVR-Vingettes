@@ -1,6 +1,6 @@
 ﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
-Shader "Particles/Additive Cheap" {
+Shader "Particles/Multiply Cheap" {
 	Properties{
 		_MainTex("Particle Texture", 2D) = "white" {}
 		_Scale("Brightness", Float) = 1
@@ -8,7 +8,7 @@ Shader "Particles/Additive Cheap" {
 
 		Category{
 			Tags { "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent" }
-			Blend SrcAlpha One
+			Blend DstColor Zero
 			Cull Off Lighting Off ZWrite Off
 
 			SubShader {
@@ -18,7 +18,6 @@ Shader "Particles/Additive Cheap" {
 					#pragma vertex vert
 					#pragma fragment frag
 					#pragma multi_compile_fog
-					#pragma multi_compile_instancing
 
 					#include "UnityCG.cginc"
 
@@ -28,7 +27,6 @@ Shader "Particles/Additive Cheap" {
 						float4 vertex : POSITION;
 						fixed4 color : COLOR;
 						float2 texcoord : TEXCOORD0;
-						UNITY_VERTEX_INPUT_INSTANCE_ID
 					};
 
 					struct v2f {
@@ -44,7 +42,6 @@ Shader "Particles/Additive Cheap" {
 					v2f vert(appdata_t v)
 					{
 						v2f o;
-						UNITY_SETUP_INSTANCE_ID(v);
 						o.vertex = UnityObjectToClipPos(v.vertex);
 						o.color = v.color;
 						o.texcoord = TRANSFORM_TEX(v.texcoord,_MainTex);
@@ -56,7 +53,7 @@ Shader "Particles/Additive Cheap" {
 					fixed4 frag(v2f i) : SV_Target
 					{
 						fixed4 col = i.color * tex2D(_MainTex, i.texcoord) * _Scale;
-						UNITY_APPLY_FOG_COLOR(i.fogCoord, col, fixed4(0, 0, 0, 0));
+						UNITY_APPLY_FOG_COLOR(i.fogCoord, col, fixed4(1, 1, 1, 0));
 						return col;
 					}
 					ENDCG
